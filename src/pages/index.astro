@@ -10,6 +10,13 @@ const sortedBlogPosts = blogPosts
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
   .slice(0, 3);
 
+function estimateReadingTime(content: string): number {
+  const chineseChars = content.match(/[\u4e00-\u9fff]/g) || [];
+  const wordCount = chineseChars.length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 300));
+  return minutes;
+}
+
 const projects = await getCollection('projects');
 const sortedProjects = projects
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
@@ -34,6 +41,7 @@ const sortedProjects = projects
             date={post.data.date}
             tags={post.data.tags}
             slug={post.slug}
+            readingTime={estimateReadingTime(post.body)}
           />
         ))}
       </div>

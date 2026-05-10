@@ -12,8 +12,6 @@ export default defineConfig({
     changefreq: 'weekly',
     priority: 0.7,
     lastmod: new Date(),
-    // 排除自动生成的标签页等（以后添加标签页时再调整）
-    filter: (page) => !page.includes('/tags/'),
   })],
 
   // shiki 代码高亮配置

@@ -19,6 +19,14 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.params;
 const allPosts = await getCollection('blog');
+
+function estimateReadingTime(content: string): number {
+  const chineseChars = content.match(/[\u4e00-\u9fff]/g) || [];
+  const wordCount = chineseChars.length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 300));
+  return minutes;
+}
+
 const filteredPosts = allPosts
   .filter(post => !post.data.draft && post.data.tags.includes(tag!))
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
@@ -40,6 +48,7 @@ const filteredPosts = allPosts
             date={post.data.date}
             tags={post.data.tags}
             slug={post.slug}
+            readingTime={estimateReadingTime(post.body)}
           />
         ))}
       </div>
