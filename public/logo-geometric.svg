@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="geoGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+    <linearGradient id="geoGrad2" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <filter id="glow2">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="200" height="200" rx="20" fill="#0f0f0f"/>
+  
+  <polygon points="100,20 130,80 100,100 70,80" fill="url(#geoGrad1)" opacity="0.3"/>
+  <polygon points="100,180 130,120 100,100 70,120" fill="url(#geoGrad2)" opacity="0.3"/>
+  <polygon points="20,100 80,70 100,100 80,130" fill="url(#geoGrad1)" opacity="0.2"/>
+  <polygon points="180,100 120,70 100,100 120,130" fill="url(#geoGrad2)" opacity="0.2"/>
+  
+  <polygon points="100,30 125,75 100,90 75,75" fill="none" stroke="url(#geoGrad1)" stroke-width="1" opacity="0.5"/>
+  
+  <g transform="translate(100, 110)">
+    <rect x="-55" y="-25" width="110" height="50" rx="8" fill="rgba(255,255,255,0.05)" stroke="url(#geoGrad1)" stroke-width="1"/>
+    
+    <text x="0" y="12" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="url(#geoGrad1)" text-anchor="middle" filter="url(#glow2)">ZONE</text>
+  </g>
+  
+  <g transform="translate(100, 60)">
+    <rect x="-15" y="-15" width="30" height="30" fill="url(#geoGrad1)" rx="4"/>
+    <rect x="-8" y="-8" width="16" height="16" fill="#0f0f0f"/>
+    <circle cx="0" cy="0" r="4" fill="#ec4899"/>
+  </g>
+  
+  <line x1="10" y1="10" x2="30" y2="30" stroke="#a855f7" stroke-width="1" opacity="0.3"/>
+  <line x1="170" y1="10" x2="190" y2="30" stroke="#ec4899" stroke-width="1" opacity="0.3"/>
+  <line x1="10" y1="170" x2="30" y2="190" stroke="#ec4899" stroke-width="1" opacity="0.3"/>
+</svg>

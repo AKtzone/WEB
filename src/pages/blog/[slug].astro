@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntryBySlug } from 'astro:content';
+
+export async function getStaticPaths() {
+  const blogPosts = await getCollection('blog');
+  // 只生成已发布文章的页面（排除草稿）
+  return blogPosts
+    .filter(post => !post.data.draft)
+    .map(post => ({
+      params: { slug: post.slug },
+    }));
+}
+
+const { slug } = Astro.params;
+const post = await getEntryBySlug('blog', slug as string);
+
+if (!post) {
+  return new Response(null, { status: 404 });
+}
+
+const { Content } = await post.render();
+
+const formattedDate = new Date(post.data.date).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout 
+  title={`${post.data.title} - ZONE`} 
+  description={post.data.description}
+  currentPath={`/WEB/blog/${slug}`}
+>
+  <article class="article">
+    <header class="article-header">
+      <h1 class="article-title">{post.data.title}</h1>
+      <p class="article-meta">
+        {formattedDate}
+        {post.data.tags.length > 0 && (
+          <span> · {post.data.tags.join(' / ')}</span>
+        )}
+      </p>
+    </header>
+    <div class="article-content">
+      <Content />
+    </div>
+    <a href="/WEB/blog/" class="back-link">← 返回博客列表</a>
+  </article>
+</BaseLayout>

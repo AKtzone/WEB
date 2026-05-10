@@ -1,0 +1,56 @@
+---
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '' } = Astro.props;
+const basePath = '/WEB';
+
+const navItems = [
+  { href: `${basePath}/`, label: '首页' },
+  { href: `${basePath}/blog/`, label: '博客' },
+  { href: `${basePath}/projects/`, label: '作品集' },
+  { href: `${basePath}/about`, label: '关于我' },
+];
+
+function isActive(href: string): boolean {
+  if (href === `${basePath}/`) {
+    return currentPath === href;
+  }
+  return currentPath.startsWith(href);
+}
+---
+
+<header class="header">
+  <div class="header-inner">
+    <a href={basePath} class="logo">ZONE</a>
+    <button 
+      class="menu-toggle" 
+      aria-label="切换菜单"
+      id="menuToggle"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="nav" id="mainNav">
+      {navItems.map(item => (
+        <a
+          href={item.href}
+          class:list={[{ active: isActive(item.href) }]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+  <script>
+    const toggle = document.getElementById('menuToggle');
+    const nav = document.getElementById('mainNav');
+    if (toggle && nav) {
+      toggle.addEventListener('click', () => {
+        nav.classList.toggle('open');
+      });
+    }
+  </script>
+</header>

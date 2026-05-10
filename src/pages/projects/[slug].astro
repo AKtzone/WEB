@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntryBySlug } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map(project => ({
+    params: { slug: project.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const project = await getEntryBySlug('projects', slug as string);
+
+if (!project) {
+  return new Response(null, { status: 404 });
+}
+
+const { Content } = await project.render();
+
+const formattedDate = new Date(project.data.date).toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout 
+  title={`${project.data.title} - ZONE`} 
+  description={project.data.description}
+  currentPath={`/WEB/projects/${slug}`}
+>
+  <article class="article">
+    <header class="article-header">
+      <h1 class="article-title">{project.data.title}</h1>
+      <p class="article-meta">{formattedDate}</p>
+      {project.data.tech.length > 0 && (
+        <div class="tags">
+          {project.data.tech.map(tag => (
+            <span class="tag" key={tag}>{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+    <div class="article-content">
+      <Content />
+    </div>
+    {(project.data.url || project.data.github) && (
+      <div class="project-links">
+        {project.data.url && (
+          <a href={project.data.url} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            🌐 项目链接
+          </a>
+        )}
+        {project.data.github && (
+          <a href={project.data.github} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+            📦 GitHub
+          </a>
+        )}
+      </div>
+    )}
+    <a href="/WEB/projects/" class="back-link">← 返回作品集</a>
+  </article>
+</BaseLayout>

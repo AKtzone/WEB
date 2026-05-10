@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+
+const blogPosts = await getCollection('blog');
+const sortedBlogPosts = blogPosts
+  .filter(post => !post.data.draft)
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 3);
+
+const projects = await getCollection('projects');
+const sortedProjects = projects
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime())
+  .slice(0, 3);
+---
+
+<BaseLayout title="ZONE 的个人网站" currentPath="/WEB/">
+  <section class="hero">
+    <div class="hero-avatar">�</div>
+    <h1 class="gradient-text">Welcome to ZONE</h1>
+    <p>探索技术与创意的无限可能，欢迎来到我的数字空间！</p>
+  </section>
+
+  <section class="section container">
+    <h2 class="section-title">最新博客</h2>
+    {sortedBlogPosts.length > 0 ? (
+      <div class="card-grid">
+        {sortedBlogPosts.map(post => (
+          <BlogCard
+            title={post.data.title}
+            description={post.data.description}
+            date={post.data.date}
+            tags={post.data.tags}
+            slug={post.slug}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">暂无博客文章</p>
+    )}
+  </section>
+
+  <section class="section container">
+    <h2 class="section-title">精选作品</h2>
+    {sortedProjects.length > 0 ? (
+      <div class="card-grid">
+        {sortedProjects.map(project => (
+          <ProjectCard
+            title={project.data.title}
+            description={project.data.description}
+            date={project.data.date}
+            tags={project.data.tech}
+            slug={project.slug}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">暂无作品</p>
+    )}
+  </section>
+</BaseLayout>

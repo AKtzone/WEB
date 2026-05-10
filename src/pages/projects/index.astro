@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getCollection } from 'astro:content';
+
+const projects = await getCollection('projects');
+const sortedProjects = projects.sort((a, b) =>
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+---
+
+<BaseLayout title="作品集 - ZONE" currentPath="/WEB/projects/">
+  <section class="section container">
+    <h1 class="section-title">作品集</h1>
+    {sortedProjects.length > 0 ? (
+      <div class="card-grid">
+        {sortedProjects.map(project => (
+          <ProjectCard
+            title={project.data.title}
+            description={project.data.description}
+            date={project.data.date}
+            tags={project.data.tech}
+            slug={project.slug}
+          />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">暂无作品，敬请期待！</p>
+    )}
+  </section>
+</BaseLayout>
