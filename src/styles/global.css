@@ -18,6 +18,27 @@
   --gradient-text-alt: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #ec4899 100%);
 }
 
+/* 亮色主题 */
+[data-theme="light"] {
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --secondary: #db2777;
+  --bg: #ffffff;
+  --bg-secondary: #f5f3ff;
+  --bg-card: #ffffff;
+  --text: #1e1b4b;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 20px rgba(124, 58, 237, 0.2);
+  --gradient-bg: linear-gradient(180deg, #ffffff 0%, #f5f3ff 50%, #ffffff 100%);
+}
+
+/* 亮色主题下毛玻璃导航栏颜色也要调整 */
+[data-theme="light"] .header {
+  background: rgba(255, 255, 255, 0.8);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -160,15 +181,17 @@ main {
 }
 
 .hero-avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
+  width: 160px;
+  height: 160px;
+  border-radius: 20px;
   margin: 0 auto 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.6);
 }
 
 .hero h1 {
@@ -492,4 +515,46 @@ main {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
+}
+
+/* 主题切换按钮 */
+.theme-toggle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+}
+
+/* 阅读进度条 */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  z-index: 1000;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* 标签链接 */
+.tag-link {
+  color: var(--primary);
+}
+
+.tag-link:hover {
+  text-decoration: underline;
 }

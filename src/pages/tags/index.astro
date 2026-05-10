@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// 获取所有博客文章
+const allPosts = await getCollection('blog');
+
+// 收集所有标签并统计文章数
+const tagMap = new Map<string, number>();
+for (const post of allPosts) {
+  if (post.data.draft) continue; // 过滤草稿
+  for (const tag of post.data.tags) {
+    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+  }
+}
+
+// 按文章数量排序
+const sortedTags = [...tagMap.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout title="标签 - ZONE" currentPath="/WEB/tags/">
+  <section class="section container">
+    <h1 class="section-title">文章标签</h1>
+    {sortedTags.length > 0 ? (
+      <div class="tags-cloud">
+        {sortedTags.map(([tag, count]) => (
+          <a href={`/WEB/tags/${tag}/`} class="tag-item">
+            {tag}
+            <span class="tag-count">{count}</span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">暂无标签</p>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+}
+
+.tag-item:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.tag-count {
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+</style>

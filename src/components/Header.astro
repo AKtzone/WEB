@@ -9,6 +9,7 @@ const basePath = '/WEB';
 const navItems = [
   { href: `${basePath}/`, label: '首页' },
   { href: `${basePath}/blog/`, label: '博客' },
+  { href: `${basePath}/tags/`, label: '标签' },
   { href: `${basePath}/projects/`, label: '作品集' },
   { href: `${basePath}/about`, label: '关于我' },
 ];
@@ -43,6 +44,9 @@ function isActive(href: string): boolean {
         </a>
       ))}
     </nav>
+    <button id="themeToggle" class="theme-toggle" aria-label="切换主题">
+      <span id="themeIcon">🌙</span>
+    </button>
   </div>
   <script>
     const toggle = document.getElementById('menuToggle');
@@ -52,5 +56,22 @@ function isActive(href: string): boolean {
         nav.classList.toggle('open');
       });
     }
+
+    // 主题切换逻辑
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+
+    // 读取 localStorage 中的主题设置，如果没有就用 'dark'
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeIcon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      themeIcon.textContent = next === 'dark' ? '🌙' : '☀️';
+    });
   </script>
 </header>

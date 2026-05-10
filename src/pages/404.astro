@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="页面未找到 - ZONE" currentPath="/WEB/404">
+  <section class="not-found">
+    <div class="not-found-code">404</div>
+    <h1 class="gradient-text">页面未找到</h1>
+    <p>你访问的页面不存在，可能已被移除或链接有误。</p>
+    <a href="/WEB/" class="btn btn-primary">返回首页</a>
+  </section>
+</BaseLayout>
+
+<style>
+.not-found {
+  text-align: center;
+  padding: 100px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.not-found-code {
+  font-size: 6rem;
+  font-weight: 800;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.not-found h1 {
+  font-size: 1.75rem;
+  margin-bottom: 12px;
+}
+
+.not-found p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin-bottom: 32px;
+}
+
+.not-found .btn {
+  display: inline-flex;
+}
+</style>

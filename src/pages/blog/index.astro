@@ -4,6 +4,14 @@ import BlogCard from '../../components/BlogCard.astro';
 import { getCollection } from 'astro:content';
 
 const blogPosts = await getCollection('blog');
+
+function estimateReadingTime(content: string): number {
+  const chineseChars = content.match(/[\u4e00-\u9fff]/g) || [];
+  const wordCount = chineseChars.length;
+  const minutes = Math.max(1, Math.ceil(wordCount / 300));
+  return minutes;
+}
+
 const sortedPosts = blogPosts
   .filter(post => !post.data.draft)
   .sort((a, b) =>
@@ -23,6 +31,7 @@ const sortedPosts = blogPosts
             date={post.data.date}
             tags={post.data.tags}
             slug={post.slug}
+            readingTime={estimateReadingTime(post.body)}
           />
         ))}
       </div>

@@ -5,9 +5,10 @@ interface Props {
   date: Date;
   tags: string[];
   slug: string;
+  readingTime?: number;
 }
 
-const { title, description, date, tags, slug } = Astro.props;
+const { title, description, date, tags, slug, readingTime } = Astro.props;
 const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
   year: 'numeric',
   month: 'long',
@@ -21,7 +22,10 @@ const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
     <h3 class="card-title">
       <a href={`/WEB/blog/${slug}`}>{title}</a>
     </h3>
-    <p class="card-meta">{formattedDate}</p>
+    <p class="card-meta">
+    {formattedDate}
+    {readingTime && <span> · ⏱ {readingTime} 分钟阅读</span>}
+  </p>
     <p class="card-description">{description}</p>
     {tags.length > 0 && (
       <div class="tags">
