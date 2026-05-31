@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>综合瑞士军刀</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #1a1b2e; color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+.header { text-align: center; padding: 28px 16px 8px; }
+.header h1 { font-size: 26px; font-weight: 700; color: #fff; }
+.header p { font-size: 14px; color: #888; margin-top: 4px; }
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 4px; padding: 16px 16px 0;
+  overflow-x: auto; white-space: nowrap;
+  scrollbar-width: thin; scrollbar-color: #2d2f54 transparent;
+  justify-content: center; flex-wrap: wrap;
+}
+.tab-btn {
+  background: transparent; border: none; color: #888;
+  padding: 10px 20px; font-size: 14px; cursor: pointer;
+  border-radius: 8px 8px 0 0; transition: all .2s;
+  font-family: inherit;
+}
+.tab-btn:hover { color: #ccc; background: rgba(124,92,252,0.08); }
+.tab-btn.active { color: #7c5cfc; background: #232540; font-weight: 600; }
+
+/* Content */
+.content { padding: 16px; max-width: 1200px; margin: 0 auto; }
+.tab-panel { display: none; animation: fadeIn .2s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards */
+.card {
+  background: #232540; border-radius: 12px; padding: 20px;
+  margin-bottom: 16px; border: 1px solid #2d2f54;
+}
+.card h3 { font-size: 16px; margin-bottom: 12px; color: #fff; }
+
+/* Form elements */
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.col { flex: 1; min-width: 200px; }
+label { display: block; font-size: 13px; color: #aaa; margin-bottom: 4px; }
+textarea, input[type="text"], input[type="number"], select, input[type="datetime-local"] {
+  width: 100%; background: #1a1b2e; color: #e0e0e0;
+  border: 1px solid #2d2f54; border-radius: 8px;
+  padding: 10px 12px; font-size: 14px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  outline: none; transition: border .2s;
+}
+textarea:focus, input:focus, select:focus { border-color: #7c5cfc; }
+textarea { resize: vertical; min-height: 120px; }
+textarea.code-output { background: #14152a; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.btn {
+  background: #2d2f54; color: #e0e0e0; border: none;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn-primary { background: #7c5cfc; color: #fff; }
+.btn-primary:hover { background: #6a4de6; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-success:hover { background: #219a52; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* Copy toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #27ae60; color: #fff; padding: 8px 20px;
+  border-radius: 8px; font-size: 14px; z-index: 999;
+  opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* Highlight for regex */
+.highlight { background: #ffeb3b; color: #000; border-radius: 2px; padding: 0 1px; }
+.match-info { margin-top: 8px; font-size: 13px; color: #aaa; }
+
+/* Color preview */
+.color-preview {
+  width: 60px; height: 60px; border-radius: 8px;
+  border: 2px solid #2d2f54; flex-shrink: 0;
+}
+
+/* Diff */
+.diff-container { display: flex; gap: 12px; }
+.diff-container .col { flex: 1; }
+.diff-line { display: flex; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.6; }
+.diff-line-num { color: #555; width: 32px; text-align: right; padding-right: 8px; user-select: none; flex-shrink: 0; }
+.diff-line-added { background: rgba(39,174,96,0.25); }
+.diff-line-removed { background: rgba(231,76,60,0.25); }
+.diff-line-modified { background: rgba(241,196,15,0.2); }
+.diff-stats { display: flex; gap: 16px; margin-top: 10px; font-size: 13px; }
+.diff-stat-added { color: #27ae60; }
+.diff-stat-removed { color: #e74c3c; }
+.diff-stat-modified { color: #f1c40f; }
+
+/* JSON tree */
+.json-tree { margin: 0; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px; line-height: 1.7; }
+.json-tree ul { list-style: none; padding-left: 20px; }
+.json-tree li { position: relative; }
+.json-tree .toggle {
+  cursor: pointer; user-select: none; color: #7c5cfc;
+  display: inline-block; width: 16px; text-align: center;
+}
+.json-tree .collapsed > ul { display: none; }
+.json-tree .key { color: #7ec8e3; }
+.json-tree .string { color: #98c379; }
+.json-tree .number { color: #d19a66; }
+.json-tree .bool { color: #c678dd; }
+.json-tree .null { color: #c678dd; }
+
+/* Color tool */
+.color-result { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
+.color-values { flex: 1; }
+.color-values div { font-size: 14px; margin-bottom: 4px; }
+.copy-btn { background: none; border: 1px solid #2d2f54; color: #888; cursor: pointer; padding: 2px 8px; border-radius: 4px; font-size: 12px; transition: all .2s; }
+.copy-btn:hover { border-color: #7c5cfc; color: #7c5cfc; }
+
+@media (max-width: 768px) {
+  .tabs { justify-content: flex-start; flex-wrap: nowrap; }
+  .row { flex-direction: column; }
+  .diff-container { flex-direction: column; }
+  .col { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔧 综合瑞士军刀</h1>
+  <p>开发者常用工具 · 纯前端 · 零依赖</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="json">JSON</button>
+  <button class="tab-btn" data-tab="regex">正则</button>
+  <button class="tab-btn" data-tab="timestamp">时间戳</button>
+  <button class="tab-btn" data-tab="encode">编解码</button>
+  <button class="tab-btn" data-tab="diff">Diff</button>
+  <button class="tab-btn" data-tab="color">颜色</button>
+</div>
+
+<div class="content" id="content">
+
+<!-- ============ JSON ============ -->
+<div class="tab-panel active" id="panel-json">
+  <div class="card">
+    <h3>JSON 工具箱</h3>
+    <div class="row">
+      <div class="col">
+        <label>输入 JSON</label>
+        <textarea id="json-input" placeholder='{"key": "value", "num": 42}' rows="8"></textarea>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="jsonFormat()">格式化</button>
+          <button class="btn" onclick="jsonCompress()">压缩</button>
+          <button class="btn" onclick="jsonValidate()">校验</button>
+          <button class="btn" onclick="jsonTree()">树形浏览</button>
+          <button class="btn" onclick="document.getElementById('json-input').value='';document.getElementById('json-output').value=''">清空</button>
+          <button class="btn" onclick="copyText('json-output')">复制</button>
+        </div>
+      </div>
+      <div class="col">
+        <label>输出</label>
+        <textarea id="json-output" class="code-output" rows="8" readonly></textarea>
+        <div id="json-tree-container" style="display:none;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ REGEX ============ -->
+<div class="tab-panel" id="panel-regex">
+  <div class="card">
+    <h3>正则测试器</h3>
+    <div class="row">
+      <div class="col" style="min-width:250px;">
+        <label>正则表达式</label>
+        <input type="text" id="regex-pattern" placeholder="\d+" oninput="runRegex()">
+        <div style="margin-top:8px;">
+          <label style="display:inline;margin-right:12px;"><input type="checkbox" id="regex-g" checked onchange="runRegex()"> 全局(g)</label>
+          <label style="display:inline;margin-right:12px;"><input type="checkbox" id="regex-i" onchange="runRegex()"> 忽略大小写(i)</label>
+          <label style="display:inline;"><input type="checkbox" id="regex-m" onchange="runRegex()"> 多行(m)</label>
+        </div>
+      </div>
+      <div class="col">
+        <label>测试文本</label>
+        <textarea id="regex-text" placeholder="在这里输入要匹配的文本..." rows="6" oninput="runRegex()"></textarea>
+        <div class="match-info" id="regex-info">匹配数量: 0</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px;">
+      <h4 style="font-size:14px;color:#aaa;margin-bottom:8px;">高亮结果</h4>
+      <div id="regex-output" style="background:#1a1b2e;border-radius:8px;padding:12px;min-height:60px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"></div>
+      <div id="regex-groups" style="margin-top:8px;font-size:13px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TIMESTAMP ============ -->
+<div class="tab-panel" id="panel-timestamp">
+  <div class="card">
+    <h3>时间戳工具</h3>
+    <div class="row">
+      <div class="col">
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="tsNow()">获取当前时间戳</button>
+          <button class="btn btn-success" onclick="tsCopy()">一键复制</button>
+        </div>
+        <div id="ts-current" style="margin-top:10px;font-size:14px;"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <div class="col">
+        <label>时间戳 → 日期</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="ts-input" placeholder="输入秒或毫秒时间戳" style="flex:1;">
+          <button class="btn btn-primary" onclick="tsToDate()">转换</button>
+        </div>
+        <div id="ts-to-date-result" style="margin-top:8px;font-size:14px;"></div>
+      </div>
+      <div class="col">
+        <label>日期 → 时间戳</label>
+        <div>
+          <input type="datetime-local" id="ts-datetime" style="margin-bottom:8px;">
+          <select id="ts-timezone">
+            <option value="local">本地时区</option>
+            <option value="UTC">UTC</option>
+          </select>
+          <button class="btn btn-primary" onclick="tsToTimestamp()" style="margin-left:8px;">转换</button>
+        </div>
+        <div id="ts-to-ts-result" style="margin-top:8px;font-size:14px;"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <div class="col">
+        <label>格式模板</label>
+        <select id="ts-format" onchange="tsFormatChange()">
+          <option value="YYYY-MM-DD HH:mm:ss">YYYY-MM-DD HH:mm:ss</option>
+          <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+          <option value="YYYY年MM月DD日">YYYY年MM月DD日</option>
+          <option value="YYYY年MM月DD日 HH:mm:ss">YYYY年MM月DD日 HH:mm:ss</option>
+          <option value="ISO 8601">ISO 8601</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ENCODE ============ -->
+<div class="tab-panel" id="panel-encode">
+  <div class="card">
+    <h3>编解码器</h3>
+    <div class="row">
+      <div class="col">
+        <label>输入文本</label>
+        <textarea id="encode-input" placeholder="输入要编码/解码的文本..." rows="6"></textarea>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="encodeBase64()">Base64 编码</button>
+      <button class="btn" onclick="decodeBase64()">Base64 解码</button>
+      <button class="btn" onclick="encodeURL()">URL 编码</button>
+      <button class="btn" onclick="decodeURL()">URL 解码</button>
+      <button class="btn" onclick="encodeHtml()">HTML 编码</button>
+      <button class="btn" onclick="decodeHtml()">HTML 解码</button>
+      <button class="btn" onclick="encodeUnicode()">Unicode 转义</button>
+      <button class="btn" onclick="decodeUnicode()">Unicode 反转义</button>
+    </div>
+    <div id="encode-results" style="margin-top:12px;">
+      <div style="margin-bottom:10px;">
+        <label>结果</label>
+        <textarea id="encode-output" class="code-output" rows="4" readonly></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DIFF ============ -->
+<div class="tab-panel" id="panel-diff">
+  <div class="card">
+    <h3>文本 Diff</h3>
+    <div class="diff-container">
+      <div class="col">
+        <label>原文本 (A)</label>
+        <textarea id="diff-left" placeholder="原内容..." rows="8" oninput="runDiff()"></textarea>
+      </div>
+      <div class="col">
+        <label>新文本 (B)</label>
+        <textarea id="diff-right" placeholder="新内容..." rows="8" oninput="runDiff()"></textarea>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="runDiff()">对比</button>
+      <button class="btn" onclick="document.getElementById('diff-left').value='';document.getElementById('diff-right').value='';document.getElementById('diff-output').innerHTML='';document.getElementById('diff-stats').innerHTML=''">清空</button>
+    </div>
+    <div id="diff-stats" class="diff-stats"></div>
+    <div id="diff-output" style="background:#1a1b2e;border-radius:8px;padding:12px;margin-top:10px;min-height:100px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.7;"></div>
+  </div>
+</div>
+
+<!-- ============ COLOR ============ -->
+<div class="tab-panel" id="panel-color">
+  <div class="card">
+    <h3>颜色工具</h3>
+    <div class="row">
+      <div class="col">
+        <label>Hex → RGB</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="color-hex" placeholder="#ff6600" style="flex:1;" oninput="colorFromHex()">
+          <button class="btn btn-primary btn-sm" onclick="colorFromHex()">转换</button>
+        </div>
+      </div>
+      <div class="col">
+        <label>RGB → Hex</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="color-rgb" placeholder="rgb(255,102,0)" style="flex:1;" oninput="colorFromRgb()">
+          <button class="btn btn-primary btn-sm" onclick="colorFromRgb()">转换</button>
+        </div>
+      </div>
+    </div>
+    <div class="color-result" id="color-result">
+      <div class="color-preview" id="color-preview" style="background:#7c5cfc;"></div>
+      <div class="color-values" id="color-values">
+        <div>Hex: <span id="color-val-hex">#7c5cfc</span> <button class="copy-btn" onclick="copyStr(document.getElementById('color-val-hex').textContent)">复制</button></div>
+        <div>RGB: <span id="color-val-rgb">rgb(124,92,252)</span> <button class="copy-btn" onclick="copyStr(document.getElementById('color-val-rgb').textContent)">复制</button></div>
+        <div>HSL: <span id="color-val-hsl">hsl(252, 96%, 67%)</span> <button class="copy-btn" onclick="copyStr(document.getElementById('color-val-hsl').textContent)">复制</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== Tab switching ==========
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== Toast ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 2000);
+}
+function copyText(id) {
+  const el = document.getElementById(id);
+  if (!el.value) return;
+  navigator.clipboard.writeText(el.value).then(() => showToast('✅ 已复制'));
+}
+function copyStr(s) {
+  navigator.clipboard.writeText(s).then(() => showToast('✅ 已复制'));
+}
+
+// ========== JSON Tools ==========
+function jsonParseSafe() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) { document.getElementById('json-output').value = ''; return null; }
+  try { return JSON.parse(raw); }
+  catch(e) {
+    const m = e.message.match(/position\s+(\d+)/i);
+    let pos = m ? parseInt(m[1]) : -1;
+    let line = 1, col = 1;
+    if (pos >= 0) {
+      const before = raw.substring(0, pos);
+      line = before.split('\n').length;
+      col = pos - before.lastIndexOf('\n');
+    }
+    document.getElementById('json-output').value = `❌ 解析错误 (第 ${line} 行, 第 ${col} 列): ${e.message}`;
+    return null;
+  }
+}
+function jsonFormat() {
+  const v = jsonParseSafe();
+  if (v === null) return;
+  document.getElementById('json-output').value = JSON.stringify(v, null, 2);
+  document.getElementById('json-tree-container').style.display = 'none';
+}
+function jsonCompress() {
+  const v = jsonParseSafe();
+  if (v === null) return;
+  document.getElementById('json-output').value = JSON.stringify(v);
+  document.getElementById('json-tree-container').style.display = 'none';
+}
+function jsonValidate() {
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) { document.getElementById('json-output').value = ''; return; }
+  const v = jsonParseSafe();
+  if (v !== null) document.getElementById('json-output').value = '✅ JSON 语法正确';
+}
+function jsonTree() {
+  const v = jsonParseSafe();
+  if (v === null) return;
+  document.getElementById('json-output').value = '';
+  document.getElementById('json-tree-container').style.display = 'block';
+  document.getElementById('json-tree-container').innerHTML = buildJsonTree(v);
+}
+function buildJsonTree(obj, key) {
+  if (obj === null) return '<span class="null">null</span>';
+  if (typeof obj === 'boolean') return '<span class="bool">' + obj + '</span>';
+  if (typeof obj === 'number') return '<span class="number">' + obj + '</span>';
+  if (typeof obj === 'string') return '<span class="string">"' + escHtml(obj) + '"</span>';
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return '<span class="null">[]</span>';
+    let html = '<span class="toggle" onclick="toggleTree(this)">▼</span>[<ul class="collapsed">';
+    obj.forEach((v, i) => {
+      html += '<li><span class="number">' + i + '</span>: ' + buildJsonTree(v) + '</li>';
+    });
+    return html + '</ul>]';
+  }
+  const keys = Object.keys(obj);
+  if (keys.length === 0) return '<span class="null">{}</span>';
+  let html = '<span class="toggle" onclick="toggleTree(this)">▼</span>{<ul class="collapsed">';
+  keys.forEach(k => {
+    html += '<li><span class="key">"' + escHtml(k) + '"</span>: ' + buildJsonTree(obj[k]) + '</li>';
+  });
+  return html + '</ul>}';
+}
+function toggleTree(el) {
+  const li = el.parentElement;
+  const ul = li.querySelector('ul');
+  if (ul) {
+    ul.classList.toggle('collapsed');
+    el.textContent = ul.classList.contains('collapsed') ? '▶' : '▼';
+  }
+}
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ========== Regex ==========
+function runRegex() {
+  const pattern = document.getElementById('regex-pattern').value;
+  const text = document.getElementById('regex-text').value;
+  const output = document.getElementById('regex-output');
+  const info = document.getElementById('regex-info');
+  const groups = document.getElementById('regex-groups');
+  if (!pattern || !text) {
+    output.textContent = text || '';
+    info.textContent = '匹配数量: 0';
+    groups.innerHTML = '';
+    return;
+  }
+  let flags = '';
+  if (document.getElementById('regex-g').checked) flags += 'g';
+  if (document.getElementById('regex-i').checked) flags += 'i';
+  if (document.getElementById('regex-m').checked) flags += 'm';
+  try {
+    const re = new RegExp(pattern, flags);
+    const matches = [...text.matchAll(re)];
+    let lastIdx = 0;
+    let html = '';
+    const groupList = [];
+    matches.forEach(m => {
+      html += escHtml(text.substring(lastIdx, m.index));
+      html += '<span class="highlight">' + escHtml(m[0]) + '</span>';
+      lastIdx = m.index + m[0].length;
+      if (m.length > 1) {
+        const gs = [];
+        for (let i = 1; i < m.length; i++) gs.push(m[i]);
+        if (gs.some(g => g !== undefined)) groupList.push({ full: m[0], groups: gs });
+      }
+    });
+    html += escHtml(text.substring(lastIdx));
+    output.innerHTML = html;
+    info.textContent = '匹配数量: ' + matches.length + ' 个';
+    if (groupList.length > 0) {
+      let gh = '<strong style="color:#aaa;">捕获组:</strong><br>';
+      groupList.forEach(g => {
+        gh += '<div style="margin:2px 0;font-size:13px;">"<span class="highlight">' + escHtml(g.full) + '</span>" → [';
+        gh += g.groups.map((v,i) => '组' + (i+1) + ': "' + escHtml(v||'') + '"').join(', ');
+        gh += ']</div>';
+      });
+      groups.innerHTML = gh;
+    } else {
+      groups.innerHTML = '';
+    }
+  } catch(e) {
+    output.textContent = '❌ 正则语法错误: ' + e.message;
+    info.textContent = '';
+    groups.innerHTML = '';
+  }
+}
+
+// ========== Timestamp ==========
+function tsNow() {
+  const s = Math.floor(Date.now() / 1000);
+  const ms = Date.now();
+  document.getElementById('ts-current').innerHTML =
+    '秒级: <strong>' + s + '</strong><br>毫秒级: <strong>' + ms + '</strong><br>' +
+    'ISO 8601: <strong>' + new Date().toISOString() + '</strong>';
+  showToast('✅ 已获取');
+}
+function tsToDate() {
+  const raw = document.getElementById('ts-input').value.trim();
+  const el = document.getElementById('ts-to-date-result');
+  if (!raw) { el.innerHTML = ''; return; }
+  let ts = parseInt(raw);
+  if (isNaN(ts)) { el.innerHTML = '❌ 请输入数字'; return; }
+  if (raw.length <= 10) ts *= 1000;
+  const d = new Date(ts);
+  const fmt = document.getElementById('ts-format').value;
+  const tz = document.getElementById('ts-timezone').value;
+  let str;
+  if (fmt === 'ISO 8601') {
+    str = d.toISOString();
+  } else if (tz === 'UTC') {
+    str = formatDateUTC(d, fmt);
+  } else {
+    str = formatDateLocal(d, fmt);
+  }
+  el.innerHTML = '📅 ' + str + (tz === 'UTC' ? ' (UTC)' : ' (本地)');
+}
+function tsToTimestamp() {
+  const el = document.getElementById('ts-to-ts-result');
+  const val = document.getElementById('ts-datetime').value;
+  if (!val) { el.innerHTML = ''; return; }
+  const d = new Date(val);
+  const s = Math.floor(d.getTime() / 1000);
+  const ms = d.getTime();
+  el.innerHTML = '秒级: <strong>' + s + '</strong><br>毫秒级: <strong>' + ms + '</strong>';
+}
+function tsCopy() {
+  const s = document.getElementById('ts-current').textContent;
+  if (s) navigator.clipboard.writeText(s).then(() => showToast('✅ 已复制'));
+}
+function tsFormatChange() {
+  const input = document.getElementById('ts-input').value.trim();
+  if (input) tsToDate();
+}
+function formatDateLocal(d, fmt) {
+  const Y = d.getFullYear();
+  const M = String(d.getMonth()+1).padStart(2,'0');
+  const D = String(d.getDate()).padStart(2,'0');
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  const s = String(d.getSeconds()).padStart(2,'0');
+  return fmt.replace('YYYY',Y).replace('MM',M).replace('DD',D).replace('HH',h).replace('mm',m).replace('ss',s);
+}
+function formatDateUTC(d, fmt) {
+  const Y = d.getUTCFullYear();
+  const M = String(d.getUTCMonth()+1).padStart(2,'0');
+  const D = String(d.getUTCDate()).padStart(2,'0');
+  const h = String(d.getUTCHours()).padStart(2,'0');
+  const m = String(d.getUTCMinutes()).padStart(2,'0');
+  const s = String(d.getUTCSeconds()).padStart(2,'0');
+  return fmt.replace('YYYY',Y).replace('MM',M).replace('DD',D).replace('HH',h).replace('mm',m).replace('ss',s);
+}
+
+// ========== Encode/Decode ==========
+function getEncodeInput() { return document.getElementById('encode-input').value; }
+function setEncodeOutput(v) { document.getElementById('encode-output').value = v; }
+function encodeBase64() {
+  try { setEncodeOutput(btoa(unescape(encodeURIComponent(getEncodeInput())))); }
+  catch(e) { setEncodeOutput('❌ 编码失败: ' + e.message); }
+}
+function decodeBase64() {
+  try { setEncodeOutput(decodeURIComponent(escape(atob(getEncodeInput())))); }
+  catch(e) { setEncodeOutput('❌ 解码失败: ' + e.message + ' (请确认输入是有效 Base64)'); }
+}
+function encodeURL() { setEncodeOutput(encodeURIComponent(getEncodeInput())); }
+function decodeURL() { setEncodeOutput(decodeURIComponent(getEncodeInput())); }
+function encodeHtml() {
+  setEncodeOutput(getEncodeInput().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'));
+}
+function decodeHtml() {
+  const el = document.createElement('div');
+  el.innerHTML = getEncodeInput();
+  setEncodeOutput(el.textContent);
+}
+function encodeUnicode() {
+  let r = '';
+  for (const ch of getEncodeInput()) {
+    const code = ch.charCodeAt(0);
+    r += code < 128 ? ch : '\\u' + code.toString(16).padStart(4,'0');
+  }
+  setEncodeOutput(r);
+}
+function decodeUnicode() {
+  setEncodeOutput(getEncodeInput().replace(/\\u([0-9a-fA-F]{4})/g, (_,h) => String.fromCharCode(parseInt(h,16))));
+}
+
+// ========== Diff ==========
+function runDiff() {
+  const left = document.getElementById('diff-left').value;
+  const right = document.getElementById('diff-right').value;
+  const output = document.getElementById('diff-output');
+  const stats = document.getElementById('diff-stats');
+  const linesA = left.split('\n');
+  const linesB = right.split('\n');
+  const lcs = lcsIndices(linesA, linesB);
+  let html = '';
+  let added = 0, removed = 0, modified = 0;
+  const maxLen = Math.max(linesA.length, linesB.length);
+  let ai = 0, bi = 0;
+  for (let i = 0; i < maxLen; i++) {
+    if (ai < linesA.length && bi < linesB.length && lcs[ai] === bi) {
+      html += '<div class="diff-line"><span class="diff-line-num">' + (ai+1) + '</span><span class="diff-line-num">' + (bi+1) + '</span><span>' + escHtml(linesA[ai]) + '</span></div>';
+      ai++; bi++;
+    } else if (ai < linesA.length && (bi >= linesB.length || lcs[ai] === undefined || lcs[ai] > bi)) {
+      html += '<div class="diff-line diff-line-removed"><span class="diff-line-num">' + (ai+1) + '</span><span class="diff-line-num"> </span><span>-' + escHtml(linesA[ai]) + '</span></div>';
+      ai++; removed++;
+    } else if (bi < linesB.length) {
+      html += '<div class="diff-line diff-line-added"><span class="diff-line-num"> </span><span class="diff-line-num">' + (bi+1) + '</span><span>+' + escHtml(linesB[bi]) + '</span></div>';
+      bi++; added++;
+    }
+  }
+  // Check for modified lines
+  modified = Math.min(linesA.length, linesB.length) - countCommon(lcs);
+  if (modified < 0) modified = 0;
+  output.innerHTML = html;
+  stats.innerHTML = '<span class="diff-stat-added">+ 新增: ' + added + '</span>' +
+    '<span class="diff-stat-removed">- 删除: ' + removed + '</span>' +
+    '<span class="diff-stat-modified">~ 修改: ' + modified + '</span>';
+}
+function lcsIndices(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, () => new Int32Array(n+1));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  const result = new Array(m).fill(undefined);
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i-1] === b[j-1]) { result[i-1] = j-1; i--; j--; }
+    else if (dp[i-1][j] >= dp[i][j-1]) i--;
+    else j--;
+  }
+  return result;
+}
+function countCommon(lcs) {
+  return lcs.filter(x => x !== undefined).length;
+}
+
+// ========== Color ==========
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+  let h = 0, s = 0, l = (mx+mn)/2;
+  if (mx !== mn) {
+    const d = mx - mn;
+    s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    if (mx === r) h = (g-b)/d + (g < b ? 6 : 0);
+    else if (mx === g) h = (b-r)/d + 2;
+    else h = (r-g)/d + 4;
+    h /= 6;
+  }
+  return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+}
+function colorFromHex() {
+  const raw = document.getElementById('color-hex').value.trim();
+  const m = raw.match(/^#?([0-9a-fA-F]{6})$/);
+  if (!m) return;
+  const hex = '#' + m[1];
+  const r = parseInt(m[1].substring(0,2), 16);
+  const g = parseInt(m[1].substring(2,4), 16);
+  const b = parseInt(m[1].substring(4,6), 16);
+  const hsl = rgbToHsl(r,g,b);
+  document.getElementById('color-val-hex').textContent = hex;
+  document.getElementById('color-val-rgb').textContent = 'rgb('+r+','+g+','+b+')';
+  document.getElementById('color-val-hsl').textContent = 'hsl('+hsl.h+','+hsl.s+'%,'+hsl.l+'%)';
+  document.getElementById('color-preview').style.background = hex;
+}
+function colorFromRgb() {
+  const raw = document.getElementById('color-rgb').value.trim();
+  const m = raw.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
+  if (!m) return;
+  const r = Math.min(255, parseInt(m[1])), g = Math.min(255, parseInt(m[2])), b = Math.min(255, parseInt(m[3]));
+  const hex = '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+  const hsl = rgbToHsl(r,g,b);
+  document.getElementById('color-val-hex').textContent = hex;
+  document.getElementById('color-val-rgb').textContent = 'rgb('+r+','+g+','+b+')';
+  document.getElementById('color-val-hsl').textContent = 'hsl('+hsl.h+','+hsl.s+'%,'+hsl.l+'%)';
+  document.getElementById('color-preview').style.background = hex;
+  document.getElementById('color-hex').value = hex;
+}
+
+// Init color demo
+colorFromHex();
+</script>
+</body>
+</html>
